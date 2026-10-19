@@ -1,0 +1,453 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Civil Nexus API. Google OAuth redirects are initiated at /civil/admin/auth/google.
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: civil-notes
+    description: Public catalogue and topic resources
+  - name: civil-admin
+    description: Authorized administrator operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /civil/catalogue:
+    get:
+      operationId: getCivilCatalogue
+      tags: [civil-notes]
+      summary: Search notes and browse the Drive-derived catalogue
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: semesterId
+          in: query
+          schema: { type: string }
+        - name: subjectId
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 12 }
+      responses:
+        "200":
+          description: Publicly accessible PDF catalogue and hierarchy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CataloguePage"
+  /civil/topics/{topicId}:
+    get:
+      operationId: getCivilTopic
+      tags: [civil-notes]
+      summary: Retrieve notes and published lectures for one topic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Topic resources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicDetail"
+        "404":
+          description: Topic not found
+  /civil/videos/config:
+    get:
+      operationId: getPublicVideoConfig
+      tags: [civil-notes]
+      summary: Read published topic video resources
+      responses:
+        "200":
+          description: Validated public video configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoConfiguration"
+  /civil/admin/auth/status:
+    get:
+      operationId: getAdminAuthStatus
+      tags: [civil-admin]
+      summary: Check the current administrator session
+      responses:
+        "200":
+          description: Current session status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStatus"
+  /civil/admin/auth/logout:
+    post:
+      operationId: logoutAdmin
+      tags: [civil-admin]
+      summary: End the administrator session
+      responses:
+        "200":
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStatus"
+  /civil/admin/catalogue:
+    get:
+      operationId: getAdminCatalogue
+      tags: [civil-admin]
+      summary: List all files and folders visible to the administrator
+      responses:
+        "200":
+          description: Drive hierarchy including private administrator resources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogue"
+        "401":
+          description: Administrator sign-in required
+  /civil/admin/folders:
+    post:
+      operationId: createDriveFolder
+      tags: [civil-admin]
+      summary: Create a semester, subject, unit, or topic folder inside the notes root
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "201":
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriveFolder"
+  /civil/admin/files:
+    post:
+      operationId: uploadDrivePdf
+      tags: [civil-admin]
+      summary: Upload a PDF to a folder inside the notes root
+      parameters:
+        - name: parentId
+          in: query
+          required: true
+          schema: { type: string }
+        - name: X-File-Name
+          in: header
+          required: true
+          description: URL-encoded PDF filename
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema: { type: string, format: binary }
+      responses:
+        "201":
+          description: PDF uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteFile"
+  /civil/admin/files/{fileId}:
+    patch:
+      operationId: updateDriveFile
+      tags: [civil-admin]
+      summary: Rename or move a PDF within the notes root
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileUpdate"
+      responses:
+        "200":
+          description: Updated file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteFile"
+    delete:
+      operationId: deleteDriveFile
+      tags: [civil-admin]
+      summary: Delete a PDF inside the notes root
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: File deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MutationResult"
+  /civil/admin/videos/config:
+    get:
+      operationId: getAdminVideoConfig
+      tags: [civil-admin]
+      summary: Read the editable Drive video configuration
+      responses:
+        "200":
+          description: Full configuration including unpublished videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoConfiguration"
+    put:
+      operationId: saveAdminVideoConfig
+      tags: [civil-admin]
+      summary: Validate and save the video configuration JSON file to Drive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoConfiguration"
+      responses:
+        "200":
+          description: Saved configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoConfiguration"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    AdminStatus:
+      type: object
+      required: [authenticated, configured]
+      properties:
+        authenticated: { type: boolean }
+        configured: { type: boolean }
+        email: { type: ["string", "null"] }
+        reason: { type: ["string", "null"] }
+    MutationResult:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+    DriveFolder:
+      type: object
+      required: [id, name, parentId]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        parentId: { type: string }
+    NoteFile:
+      type: object
+      required: [id, name, mimeType, modifiedTime, size, semesterId, semesterName, subjectId, subjectName, topicId, topicName, category]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        mimeType: { type: string }
+        modifiedTime: { type: ["string", "null"], format: date-time }
+        size: { type: ["integer", "null"] }
+        semesterId: { type: string }
+        semesterName: { type: string }
+        subjectId: { type: string }
+        subjectName: { type: string }
+        unitId: { type: ["string", "null"] }
+        unitName: { type: ["string", "null"] }
+        topicId: { type: string }
+        topicName: { type: string }
+        category:
+          type: string
+          enum: [notes, practice]
+        webViewLink: { type: ["string", "null"], format: uri }
+        webContentLink: { type: ["string", "null"], format: uri }
+        thumbnailLink: { type: ["string", "null"], format: uri }
+        isPublic: { type: boolean }
+        parentId: { type: ["string", "null"] }
+    TopicSummary:
+      type: object
+      required: [id, name, semesterId, semesterName, subjectId, subjectName, unitName, fileCount]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        semesterId: { type: string }
+        semesterName: { type: string }
+        subjectId: { type: string }
+        subjectName: { type: string }
+        unitId: { type: ["string", "null"] }
+        unitName: { type: ["string", "null"] }
+        fileCount: { type: integer }
+    SubjectSummary:
+      type: object
+      required: [id, name, subjectCount, topics]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        subjectCount: { type: integer }
+        topics:
+          type: array
+          items: { $ref: "#/components/schemas/TopicSummary" }
+    SemesterSummary:
+      type: object
+      required: [id, name, subjectCount, fileCount, subjects]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        subjectCount: { type: integer }
+        fileCount: { type: integer }
+        subjects:
+          type: array
+          items: { $ref: "#/components/schemas/SubjectSummary" }
+    CataloguePage:
+      type: object
+      required: [source, configured, semesters, items, recentFiles, total, page, pageSize]
+      properties:
+        source:
+          type: string
+          enum: [drive, unconfigured]
+        configured: { type: boolean }
+        semesters:
+          type: array
+          items: { $ref: "#/components/schemas/SemesterSummary" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/NoteFile" }
+        recentFiles:
+          type: array
+          items: { $ref: "#/components/schemas/NoteFile" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    TopicDetail:
+      type: object
+      required: [topic, notes, practice, videos, source]
+      properties:
+        topic: { $ref: "#/components/schemas/TopicSummary" }
+        notes:
+          type: array
+          items: { $ref: "#/components/schemas/NoteFile" }
+        practice:
+          type: array
+          items: { $ref: "#/components/schemas/NoteFile" }
+        videos:
+          type: array
+          items: { $ref: "#/components/schemas/TopicVideo" }
+        source:
+          type: string
+          enum: [drive]
+    FolderInput:
+      type: object
+      required: [name, parentId]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        parentId: { type: string, minLength: 1 }
+    FileUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 180 }
+        parentId: { type: string, minLength: 1 }
+    TopicVideo:
+      type: object
+      required: [id, videoId, title, youtubeUrl, order, published]
+      properties:
+        id: { type: string }
+        videoId: { type: string }
+        title: { type: string }
+        youtubeUrl: { type: string, format: uri }
+        channelName: { type: ["string", "null"] }
+        order: { type: integer }
+        published: { type: boolean }
+    TopicVideoConfig:
+      type: object
+      required: [id, name, videos]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        videos:
+          type: array
+          items: { $ref: "#/components/schemas/TopicVideo" }
+    VideoUnitConfig:
+      type: object
+      required: [id, name, topics]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        topics:
+          type: array
+          items: { $ref: "#/components/schemas/TopicVideoConfig" }
+    VideoSubjectConfig:
+      type: object
+      required: [id, name, units]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        units:
+          type: array
+          items: { $ref: "#/components/schemas/VideoUnitConfig" }
+    VideoSemesterConfig:
+      type: object
+      required: [id, name, subjects]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        subjects:
+          type: array
+          items: { $ref: "#/components/schemas/VideoSubjectConfig" }
+    VideoConfiguration:
+      type: object
+      required: [schemaVersion, semesters]
+      properties:
+        schemaVersion: { type: integer, enum: [1] }
+        updatedAt: { type: ["string", "null"], format: date-time }
+        semesters:
+          type: array
+          items: { $ref: "#/components/schemas/VideoSemesterConfig" }
+    AdminCatalogue:
+      type: object
+      required: [configured, rootFolderId, folders, files]
+      properties:
+        configured: { type: boolean }
+        rootFolderId: { type: ["string", "null"] }
+        folders:
+          type: array
+          items:
+            type: object
+            required: [id, name, parentId]
+            properties:
+              id: { type: string }
+              name: { type: string }
+              parentId: { type: ["string", "null"] }
+              depth: { type: integer }
+        files:
+          type: array
+          items: { $ref: "#/components/schemas/NoteFile" }
+

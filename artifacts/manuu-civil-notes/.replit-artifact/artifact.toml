@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Civil Nexus"
+description = "A responsive educational resource platform for Civil Engineering students at Maulana Azad National Urdu University, with Google Drive notes and YouTube learning resources."
+version = "1.0.0"
+id = "artifacts/manuu-civil-notes"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26042
+
+[services.development]
+run = "pnpm --filter @workspace/manuu-civil-notes run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/manuu-civil-notes", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/manuu-civil-notes/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26042"
+BASE_PATH = "/"

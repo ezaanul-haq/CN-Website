@@ -1,0 +1,110 @@
+I want you to modify my existing project, MANUU-Civil-Hub, into a polished and expandable educational website called "Civil Nexus".
+
+IMPORTANT:
+- Work on the existing project rather than creating a new project from scratch.
+- Preserve all existing functionality, components, APIs, data structures, and integrations wherever possible.
+- Inspect the entire project before making changes.
+- Implement the changes, resolve errors, and test the application before declaring the task complete.
+- Do not just provide instructions or code snippets. Make the changes directly in the project.
+
+MY REQUIREMENTS
+
+1. WEBSITE BRANDING
+- Change the website name to "Civil Nexus".
+- The website is intended primarily for Civil Engineering students at Maulana Azad National Urdu University (MANUU), Hyderabad.
+- Use a clean, modern, professional academic design.
+- Ensure the design works well on desktop, tablets, and mobile devices.
+
+2. HOME PAGE
+- Create a dedicated introductory homepage at the root route (/).
+- Introduce Civil Nexus and explain that it is a resource platform for Civil Engineering students.
+- Include clear navigation buttons or cards directing users to:
+  a. Notes
+  b. YouTube video lectures
+- Include a brief introduction to the platform's purpose and its intended audience.
+- Keep the homepage visually appealing without making it unnecessarily complicated.
+- Include the existing search functionality where appropriate, but do not make the homepage cluttered.
+
+3. NOTES PAGE
+- Create a dedicated Notes page at /notes.
+- Preserve the existing notes catalogue and its functionality.
+- Keep the existing search bar and ensure that it continues to work.
+- Preserve existing semester filters, subject filters, resource cards, and document links.
+- Organize notes logically by semester, subject, unit, or topic wherever supported by the existing data.
+- Make it easy for students to discover and access notes.
+- Do not replace existing notes or resources with fabricated data.
+
+4. YOUTUBE VIDEO PAGE
+- Create a dedicated page at /videos for YouTube video lectures.
+- Organize videos by semester, subject, unit, and topic wherever the existing data supports it.
+- Display useful video information and provide links to watch the videos.
+- Reuse existing video components, API endpoints, and data structures.
+- If no videos are configured, display a helpful empty state.
+- Do not invent YouTube URLs or video resources.
+
+5. NAVIGATION
+- Add a consistent navigation bar across the website.
+- Include separate tabs for:
+  - Home
+  - Notes
+  - YouTube
+- Preserve the existing MANUU-related page and administrative access if they already exist.
+- Make the navigation responsive and usable on mobile devices.
+- Ensure every navigation link points to the correct route.
+
+6. ADMIN PANEL AND FUTURE EXPANSION
+- Preserve the existing admin panel and authentication mechanisms.
+- Ensure the website can be expanded later without redesigning the entire application.
+- Administrators should be able to add or manage notes and video links using the existing backend and data-management mechanisms wherever those features are supported.
+- Do not introduce a fake admin panel or bypass authentication.
+- If note or video management is not fully implemented, clearly identify what remains necessary rather than pretending it works.
+
+7. FOOTER
+- Add a consistent footer throughout the website.
+- Include a short description similar to:
+  "Civil Nexus is an educational resource platform designed to help Civil Engineering students access notes, learning materials, and video lectures."
+- Include the following credits:
+
+  Developers:
+  - Afzal
+  - Izaan
+
+  Contributors:
+  - Irfan
+  - Arman
+
+- Present the credits neatly and professionally.
+- Do not invent additional names or affiliations.
+
+8. TECHNICAL REQUIREMENTS
+- Preserve the existing technology stack unless a change is genuinely necessary.
+- Preserve the current API client, backend integrations, Google Drive integration, and existing resource-management logic.
+- Do not introduce unnecessary paid services or new external dependencies.
+- Ensure the project remains compatible with the Replit environment.
+- Keep the existing search bar functional.
+- Fix any syntax errors or broken imports introduced by the changes.
+- Verify that the application builds successfully.
+- Verify that the Home, Notes, and Videos routes render correctly.
+- Check for browser-console errors and broken navigation.
+- Ensure that the admin route and existing functionality have not been accidentally broken.
+
+9. WINDOWS COMPATIBILITY
+The repository currently has a root preinstall script that invokes the Unix shell command "sh". This causes installation failures when running pnpm directly in Windows PowerShell.
+
+Inspect the root package.json and make the installation process portable across Windows and Unix-like environments, if this can be done without weakening dependency-manager enforcement or breaking the Replit environment.
+
+Also ensure that platform-specific optional dependencies for tools such as Rollup, esbuild, Lightning CSS, and Tailwind CSS are installed correctly by the package manager. Do not manually hard-code Windows-only packages into the application unless genuinely necessary.
+
+10. FINAL VERIFICATION
+Before finishing:
+- Run the available build and type-check commands.
+- Fix all errors caused by your changes.
+- Test the routes and verify the navigation.
+- Check that the search functionality remains available.
+- Verify that the footer displays the correct names and descriptions.
+- Verify that the application still uses the existing backend and data sources.
+- Clearly report any tests you could not run and any existing limitations.
+
+Do not claim that something works unless you have verified it.
+
+My priority is a reliable, clean, maintainable Civil Engineering resource website, not unnecessary complexity.
